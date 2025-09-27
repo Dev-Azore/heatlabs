@@ -18,33 +18,44 @@ import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/auth-helpers-nextjs';
 
 export async function middleware(req: NextRequest) {
-  // Create a mutable response that we can return or update
+  // Create a mutable response
   const res = NextResponse.next();
 
-  // 1. Initialize Supabase client bound to request/response cookies
-  const supabase = createServerClient({
-    req,
-    res,
-  });
+  // Initialize Supabase client with environment variables
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get: (name) => req.cookies.get(name)?.value,
+        set: (name, value, options) => {
+          res.cookies.set(name, value, options);
+        },
+        remove: (name, options) => {
+          res.cookies.set(name, '', { ...options, maxAge: 0 });
+        },
+      },
+    }
+  );
 
-  // 2. If the path begins with /admin → we need to enforce protection
+  // If the path begins with /admin, enforce protection
   if (req.nextUrl.pathname.startsWith('/admin')) {
-    // Get logged in user from Supabase Auth
+    // Get logged-in user from Supabase Auth
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      // Case A: User not logged in → send them to login page
+      // Case A: User not logged in → redirect to login page
       return NextResponse.redirect(new URL('/auth/login', req.url));
     }
 
-    // Call our DB RPC to get the user's role (from profiles table)
+    // Call DB RPC to get the user's role
     const { data: role, error } = await supabase.rpc('get_my_role');
 
     if (error) {
       console.error('Error fetching role in middleware:', error.message);
-      // If error occurs, be safe and redirect to dashboard
+      // Redirect to dashboard on error
       return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
@@ -57,11 +68,10 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
-  // 3. For all other routes → do nothing special
+  // For all other routes, do nothing
   return res;
 }
 
-// Limit middleware execution to /admin/* routes only
 export const config = {
   matcher: ['/admin/:path*'],
 };

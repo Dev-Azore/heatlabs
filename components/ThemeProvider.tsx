@@ -27,7 +27,7 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
   });
 
   useEffect(() => {
-    const root = document.documentElement; // Simplified from window.document
+    const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
     } else {
