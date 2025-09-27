@@ -1,0 +1,13 @@
+'use client';
+/** Admin Modules CRUD - create modules and assign to labs */
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+export default function AdminModules() {
+  const [modules,setModules]=useState<any[]>([]); const [labs,setLabs]=useState<any[]>([]);
+  const [title,setTitle]=useState(''); const [slug,setSlug]=useState(''); const [labId,setLabId]=useState(''); const [summary,setSummary]=useState(''); const [content,setContent]=useState(''); const [loading,setLoading]=useState(false);
+  useEffect(()=>{ fetchAll(); },[]);
+  async function fetchAll(){ const { data: mods } = await supabase.from('modules').select('*').order('created_at'); const { data: l } = await supabase.from('labs').select('*').order('created_at'); setModules(mods||[]); setLabs(l||[]); }
+  async function createModule(){ setLoading(true); const { error } = await supabase.from('modules').insert([{ title, slug, lab_id: labId, summary, content }]); if(error) alert(error.message); else { setTitle(''); setSlug(''); setSummary(''); setContent(''); fetchAll(); } setLoading(false); }
+  async function deleteModule(id:string){ if(!confirm('Delete module?')) return; const { error } = await supabase.from('modules').delete().eq('id', id); if(error) alert(error.message); else fetchAll(); }
+  return (<div className="p-6"><h2 className="text-xl font-semibold mb-4">Modules</h2><div className="mb-4 space-y-2"><input placeholder="Title" value={title} onChange={(e)=>setTitle(e.target.value)} className="p-2 bg-slate-800 rounded w-full" /><input placeholder="Slug (e.g. traffic-light)" value={slug} onChange={(e)=>setSlug(e.target.value)} className="p-2 bg-slate-800 rounded w-full" /><select value={labId} onChange={(e)=>setLabId(e.target.value)} className="p-2 bg-slate-800 rounded w-full"><option value="">Select Lab</option>{labs.map(l=>(<option key={l.id} value={l.id}>{l.title}</option>))}</select><input placeholder="Summary" value={summary} onChange={(e)=>setSummary(e.target.value)} className="p-2 bg-slate-800 rounded w-full" /><textarea placeholder="Content (instructions/hints)" value={content} onChange={(e)=>setContent(e.target.value)} className="p-2 bg-slate-800 rounded w-full" /><button onClick={createModule} className="px-4 py-2 bg-amber-500 rounded" disabled={loading}>Create Module</button></div><div className="grid gap-3">{modules.map(m=>(<div key={m.id} className="p-3 bg-slate-800 rounded flex justify-between items-center"><div><div className="font-semibold">{m.title}</div><div className="text-sm text-slate-400">{m.slug}</div></div><div className="flex gap-2"><button onClick={()=>deleteModule(m.id)} className="px-3 py-1 bg-red-600 rounded">Delete</button></div></div>))}</div></div>);
+}
