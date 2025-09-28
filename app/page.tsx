@@ -1,11 +1,11 @@
 /**
  * Landing page (server component).
- * - Fetches sample labs from Supabase
- * - Renders hero section + LabCard previews
+ * - Shows hero section
+ * - Previews a few labs (but locked until login)
+ * - Encourages signup
  */
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
-import LabCard from '@/components/LabCard';
 
 export default async function Home() {
   // Fetch latest 4 labs from Supabase
@@ -28,10 +28,10 @@ export default async function Home() {
               Interactive labs in Health, Education, Agriculture, Technology.
             </p>
 
-            {/* ✅ Updated Links (no <a> tag inside) */}
+            {/* ✅ Updated Start Button → goes to Signup */}
             <div className="flex gap-3">
               <Link
-                href="/dashboard"
+                href="/auth/signup"
                 className="px-5 py-3 rounded-md bg-amber-500 font-semibold"
               >
                 Start
@@ -46,12 +46,30 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* Labs Preview Section */}
+        {/* Labs Preview Section (Locked previews) */}
         <section className="mt-12">
-          <h2 className="text-2xl font-semibold mb-4">Explore Labs</h2>
+          <h2 className="text-2xl font-semibold mb-4">Explore Labs (Preview)</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {labs?.map((lab: any) => (
-              <LabCard key={lab.id} lab={lab} />
+              <div
+                key={lab.id}
+                className="block p-4 rounded bg-slate-800 border border-slate-700 hover:shadow cursor-not-allowed opacity-75"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-slate-700 rounded flex items-center justify-center">
+                    <span>🔒</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{lab.title}</h3>
+                    <p className="text-slate-400 text-sm mt-1">
+                      {lab.description}
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-slate-500">
+                  Sign up to unlock this lab →
+                </p>
+              </div>
             ))}
           </div>
         </section>
