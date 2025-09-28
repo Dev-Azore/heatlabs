@@ -1,97 +1,85 @@
 'use client';
+
 /**
  * Signup Page
- * ===========
- * - Allows new users to register with email + password.
- * - Uses Supabase Auth (signUp).
- * - After signup → redirects user to dashboard.
+ * ------------------------
+ * - Registers new users with email + password
+ * - Redirects to /dashboard on success
+ * - Provides link to Login
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import Link from 'next/link';
 
 export default function SignupPage() {
   const router = useRouter();
-
-  // Local state for form inputs
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  // State for handling errors and loading state
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  /**
-   * Handles signup form submission
-   */
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault(); // prevent page reload
+    e.preventDefault();
     setError(null);
     setLoading(true);
 
-    // Call Supabase to create a new user
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
     setLoading(false);
 
     if (error) {
-      // Show error if signup fails
       setError(error.message);
     } else {
-      // On success → redirect to dashboard
       router.push('/dashboard');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100">
-      {/* Signup form */}
-      <form
-        onSubmit={handleSignup}
-        className="bg-slate-800 p-6 rounded shadow-md w-full max-w-md space-y-4"
-      >
-        <h1 className="text-2xl font-bold">Sign Up</h1>
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100 px-6">
+      <div className="w-full max-w-md bg-slate-800 p-6 rounded shadow">
+        <h1 className="text-2xl font-bold mb-4">Create an account</h1>
+        <form onSubmit={handleSignup} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full p-2 rounded bg-slate-700 text-white"
+          />
+          <input
+            type="password"
+            placeholder="Password (min 6 chars)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full p-2 rounded bg-slate-700 text-white"
+          />
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2 bg-amber-500 rounded font-semibold hover:bg-amber-600"
+          >
+            {loading ? 'Signing up...' : 'Sign Up'}
+          </button>
+        </form>
 
-        {/* Show error message if signup fails */}
-        {error && <p className="text-red-400">{error}</p>}
-
-        {/* Email input */}
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full px-3 py-2 rounded bg-slate-700"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        {/* Password input */}
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full px-3 py-2 rounded bg-slate-700"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        {/* Submit button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 rounded"
-        >
-          {loading ? 'Signing up...' : 'Sign Up'}
-        </button>
-
-        {/* Link to login page */}
-        <p className="text-sm text-slate-400 text-center">
-          Already have an account?{' '}
-          <a href="/auth/login" className="text-amber-400">
-            Login
-          </a>
-        </p>
-      </form>
+        {/* Links below form */}
+        <div className="mt-4 text-sm text-slate-400">
+          <p>
+            Already have an account?{' '}
+            <Link href="/auth/login" className="text-amber-400">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

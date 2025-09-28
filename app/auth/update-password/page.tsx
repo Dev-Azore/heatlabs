@@ -1,77 +1,91 @@
 'use client';
+
 /**
  * Update Password Page
- * ====================
- * - User lands here after clicking reset link from email.
- * - Enter new password → update in Supabase.
- * - Redirects to dashboard after success.
+ * --------------------
+ * - This page is opened when user clicks the reset link in their email
+ * - User can set a new password here
+ * - After success → redirect to /dashboard
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
+  const supabase = createClientComponentClient();
 
-  // State for new password
   const [password, setPassword] = useState('');
-
-  // State for error + loading
+  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  /**
-   * Handles password update
-   */
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirm) {
+      setError("Passwords don't match.");
+      return;
+    }
+
     setLoading(true);
 
-    // Tell Supabase to update user’s password
     const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
 
     if (error) {
       setError(error.message);
     } else {
-      // Redirect to dashboard
+      // ✅ Redirect to dashboard after password reset
       router.push('/dashboard');
+      router.refresh();
     }
+
+    setLoading(false);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100">
-      {/* Update password form */}
-      <form
-        onSubmit={handleUpdate}
-        className="bg-slate-800 p-6 rounded shadow-md w-full max-w-md space-y-4"
-      >
-        <h1 className="text-2xl font-bold">Set New Password</h1>
+      <div className="bg-slate-800 p-8 rounded w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6">Set New Password</h1>
 
-        {/* Show error if update fails */}
-        {error && <p className="text-red-400">{error}</p>}
+        {error && <p className="text-red-500 mb-4">{error}</p>}
 
-        {/* Password input */}
-        <input
-          type="password"
-          placeholder="New password"
-          className="w-full px-3 py-2 rounded bg-slate-700"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <form onSubmit={handleUpdate} className="space-y-4">
+          <div>
+            <label className="block text-sm mb-1">New Password</label>
+            <input
+              type="password"
+              className="w-full p-2 rounded bg-slate-700 border border-slate-600"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
 
-        {/* Submit button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 rounded"
-        >
-          {loading ? 'Updating...' : 'Update Password'}
-        </button>
-      </form>
+          <div>
+            <label className="block text-sm mb-1">Confirm Password</label>
+            <input
+              type="password"
+              className="w-full p-2 rounded bg-slate-700 border border-slate-600"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2 bg-amber-500 rounded font-semibold"
+            disabled={loading}
+          >
+            {loading ? 'Updating…' : 'Update Password'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -2,94 +2,88 @@
 
 /**
  * Login Page
- * ----------
- * - Authenticates user with Supabase
- * - Stores session so middleware & dashboard recognize login
+ * ------------------------
+ * - Authenticates existing users with email + password
  * - Redirects to /dashboard on success
+ * - Provides links to Signup and Reset Password
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClientComponentClient(); // ✅ ensures cookie/session sync
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Handle login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+    setLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
+    setLoading(false);
+
     if (error) {
       setError(error.message);
     } else {
-      // ✅ After login → go to dashboard
       router.push('/dashboard');
-      router.refresh(); // force state refresh so Navbar/Dashboard see the new user
     }
-
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100">
-      <div className="bg-slate-800 p-8 rounded w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6">Sign In</h1>
-
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100 px-6">
+      <div className="w-full max-w-md bg-slate-800 p-6 rounded shadow">
+        <h1 className="text-2xl font-bold mb-4">Sign in</h1>
         <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm mb-1">Email</label>
-            <input
-              type="email"
-              className="w-full p-2 rounded bg-slate-700 border border-slate-600"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1">Password</label>
-            <input
-              type="password"
-              className="w-full p-2 rounded bg-slate-700 border border-slate-600"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full p-2 rounded bg-slate-700 text-white"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full p-2 rounded bg-slate-700 text-white"
+          />
+          {error && <p className="text-red-400 text-sm">{error}</p>}
           <button
             type="submit"
-            className="w-full py-2 bg-amber-500 rounded font-semibold"
             disabled={loading}
+            className="w-full py-2 bg-amber-500 rounded font-semibold hover:bg-amber-600"
           >
-            {loading ? 'Signing in…' : 'Sign In'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
-        <div className="mt-4 text-sm flex justify-between">
-          <Link href="/auth/signup" className="text-amber-400 hover:underline">
-            Create an account
-          </Link>
-          <Link href="/auth/reset" className="text-amber-400 hover:underline">
-            Forgot password?
-          </Link>
+        {/* Links below form */}
+        <div className="mt-4 text-sm text-slate-400 space-y-1">
+          <p>
+            Don’t have an account?{' '}
+            <Link href="/auth/signup" className="text-amber-400">
+              Sign up
+            </Link>
+          </p>
+          <p>
+            Forgot password?{' '}
+            <Link href="/auth/reset" className="text-amber-400">
+              Reset here
+            </Link>
+          </p>
         </div>
       </div>
     </div>
