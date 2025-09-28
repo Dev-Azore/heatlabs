@@ -17,29 +17,15 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/auth-helpers-nextjs';
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'; // ✅ FIXED helper
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
-  // Initialize Supabase client (auth aware)
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get: (name) => req.cookies.get(name)?.value,
-        set: (name, value, options) => {
-          res.cookies.set(name, value, options);
-        },
-        remove: (name, options) => {
-          res.cookies.set(name, '', { ...options, maxAge: 0 });
-        },
-      },
-    }
-  );
+  // ✅ Correct client for middleware
+  const supabase = createMiddlewareClient({ req, res });
 
-  // Fetch current user
+  // Get current user session
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -49,45 +35,39 @@ export async function middleware(req: NextRequest) {
   /**
    * Rule 1: Protect /dashboard/*
    * -----------------------------
-   * - User must be logged in
-   * - Covers: dashboard, labs, modules, profile, etc.
+   * Must be logged in.
    */
   if (path.startsWith('/dashboard')) {
     if (!user) {
       return NextResponse.redirect(new URL('/auth/login', req.url));
     }
-    return res; // logged-in users allowed
+    return res;
   }
 
   /**
    * Rule 2: Protect /admin/*
    * ------------------------
-   * - User must be logged in AND have role = admin
+   * Must be logged in AND have role = admin.
    */
   if (path.startsWith('/admin')) {
     if (!user) {
       return NextResponse.redirect(new URL('/auth/login', req.url));
     }
 
-    // Check role from Supabase via RPC
     const { data: role, error } = await supabase.rpc('get_my_role');
 
-    if (error) {
-      console.error('Middleware role check error:', error.message);
+    if (error || role !== 'admin') {
+      console.error('Middleware role check error:', error?.message);
       return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
-    if (role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
-    }
-
-    return res; // admin allowed
+    return res;
   }
 
   /**
    * Rule 3: Redirect logged-in users away from /auth/*
    * ---------------------------------------------------
-   * - If already logged in, skip login/signup pages
+   * Skip login/signup/reset pages if already logged in.
    */
   if (path.startsWith('/auth')) {
     if (user) {
@@ -107,8 +87,8 @@ export async function middleware(req: NextRequest) {
  */
 export const config = {
   matcher: [
-    '/dashboard/:path*', // Labs, modules, dashboard — must log in
-    '/admin/:path*',     // Admin — must be admin
-    '/auth/:path*',      // Auth pages — skip if logged in
+    '/dashboard/:path*', // must log in
+    '/admin/:path*',     // must be admin
+    '/auth/:path*',      // skip if logged in
   ],
 };
