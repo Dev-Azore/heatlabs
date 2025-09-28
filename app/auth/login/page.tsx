@@ -1,107 +1,97 @@
 'use client';
+
 /**
  * Login Page
- * ==========
- * - Allows existing users to log in with email + password.
- * - On success → redirects to dashboard.
- * - Includes links to Signup + Reset Password pages.
+ * ----------
+ * - Authenticates user with Supabase
+ * - Stores session so middleware & dashboard recognize login
+ * - Redirects to /dashboard on success
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
+  const supabase = createClientComponentClient(); // ✅ ensures cookie/session sync
 
-  // Local state for form inputs
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  // State for handling error + loading
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  /**
-   * Handles login form submission
-   */
+  // Handle login
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // prevent page reload
-    setError(null);
+    e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    // Call Supabase Auth to sign in user
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    setLoading(false);
-
     if (error) {
-      // Show error if login fails
       setError(error.message);
     } else {
-      // On success → redirect to dashboard
+      // ✅ After login → go to dashboard
       router.push('/dashboard');
+      router.refresh(); // force state refresh so Navbar/Dashboard see the new user
     }
+
+    setLoading(false);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100">
-      {/* Login form */}
-      <form
-        onSubmit={handleLogin}
-        className="bg-slate-800 p-6 rounded shadow-md w-full max-w-md space-y-4"
-      >
-        <h1 className="text-2xl font-bold">Login</h1>
+      <div className="bg-slate-800 p-8 rounded w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6">Sign In</h1>
 
-        {/* Show error if login fails */}
-        {error && <p className="text-red-400">{error}</p>}
+        {error && <p className="text-red-500 mb-4">{error}</p>}
 
-        {/* Email input */}
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full px-3 py-2 rounded bg-slate-700"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-sm mb-1">Email</label>
+            <input
+              type="email"
+              className="w-full p-2 rounded bg-slate-700 border border-slate-600"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-        {/* Password input */}
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full px-3 py-2 rounded bg-slate-700"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+          <div>
+            <label className="block text-sm mb-1">Password</label>
+            <input
+              type="password"
+              className="w-full p-2 rounded bg-slate-700 border border-slate-600"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-        {/* Submit button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 rounded"
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
+          <button
+            type="submit"
+            className="w-full py-2 bg-amber-500 rounded font-semibold"
+            disabled={loading}
+          >
+            {loading ? 'Signing in…' : 'Sign In'}
+          </button>
+        </form>
 
-        {/* Extra links for Signup + Reset Password */}
-        <p className="text-sm text-slate-400 text-center">
-          Don’t have an account?{' '}
-          <a href="/auth/signup" className="text-amber-400">
-            Sign Up
-          </a>
-        </p>
-        <p className="text-sm text-slate-400 text-center">
-          Forgot your password?{' '}
-          <a href="/auth/reset" className="text-amber-400">
-            Reset Password
-          </a>
-        </p>
-      </form>
+        <div className="mt-4 text-sm flex justify-between">
+          <Link href="/auth/signup" className="text-amber-400 hover:underline">
+            Create an account
+          </Link>
+          <Link href="/auth/reset" className="text-amber-400 hover:underline">
+            Forgot password?
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
