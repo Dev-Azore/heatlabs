@@ -1,48 +1,51 @@
-'use client';
+'use client'
 
 /**
  * Signup Page
  * ------------------------
- * - Registers new users with email + password
- * - Redirects to /dashboard on success
- * - Provides link to Login
+ * - Registers a new user with email + password.
+ * - Redirects to /dashboard on success.
+ * - Uses Supabase context (useSupabaseClient).
  */
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
-import Link from 'next/link';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import Link from 'next/link'
 
 export default function SignupPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const supabase = useSupabaseClient()
+  const router = useRouter()
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
-    });
+    })
 
-    setLoading(false);
+    setLoading(false)
 
     if (error) {
-      setError(error.message);
+      setError(error.message)
     } else {
-      router.push('/dashboard');
+      router.push('/dashboard')
+      router.refresh()
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100 px-6">
       <div className="w-full max-w-md bg-slate-800 p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">Create an account</h1>
+        <h1 className="text-2xl font-bold mb-4">Create account</h1>
         <form onSubmit={handleSignup} className="space-y-4">
           <input
             type="email"
@@ -54,7 +57,7 @@ export default function SignupPage() {
           />
           <input
             type="password"
-            placeholder="Password (min 6 chars)"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -71,7 +74,7 @@ export default function SignupPage() {
         </form>
 
         {/* Links below form */}
-        <div className="mt-4 text-sm text-slate-400">
+        <div className="mt-4 text-sm text-slate-400 space-y-1">
           <p>
             Already have an account?{' '}
             <Link href="/auth/login" className="text-amber-400">
@@ -81,5 +84,5 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

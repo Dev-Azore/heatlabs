@@ -10,7 +10,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClientComponentClient } from '@supabase/ssr';
 
 export default function UpdatePasswordPage() {
   const router = useRouter();

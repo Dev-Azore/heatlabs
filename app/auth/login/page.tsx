@@ -1,43 +1,50 @@
-'use client';
+'use client'
 
 /**
  * Login Page
  * ------------------------
- * - Authenticates existing users with email + password
- * - Redirects to /dashboard on success
- * - Provides links to Signup and Reset Password
+ * - Authenticates existing users with email + password.
+ * - Redirects to /dashboard on success.
+ * - Uses Supabase context (useSupabaseClient).
  */
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
-import Link from 'next/link';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import Link from 'next/link'
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const supabase = useSupabaseClient()
+  const router = useRouter()
 
+  // Local form state
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  /**
+   * Handle login form submit
+   */
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-    });
+    })
 
-    setLoading(false);
+    setLoading(false)
 
     if (error) {
-      setError(error.message);
+      setError(error.message)
     } else {
-      router.push('/dashboard');
+      router.push('/dashboard')
+      router.refresh() // ✅ ensures Navbar updates immediately
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100 px-6">
@@ -87,5 +94,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

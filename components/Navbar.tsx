@@ -1,54 +1,34 @@
-'use client';
+'use client'
 
 /**
  * Navbar Component
  * =================
  * - Displays a sticky top navigation bar across the site.
- * - Auth-aware: adjusts links depending on whether the user is logged in or out.
+ * - Auth-aware via Supabase context (useSession).
  *   - Logged OUT → shows Login + Signup.
  *   - Logged IN  → shows Dashboard + Logout.
- * - Admin link is intentionally omitted (security by obscurity).
- * - Always shows the ThemeToggle component for dark/light mode.
+ * - Always shows the ThemeToggle component.
  */
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import ThemeToggle from './ThemeToggle';
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react'
+import ThemeToggle from './ThemeToggle'
 
 export default function Navbar() {
-  // State: track whether a user is logged in
-  const [user, setUser] = useState<any>(null);
-
-  /**
-   * Effect: On mount, check for current user
-   * - Uses Supabase Auth helpers
-   * - Subscribes to auth state changes (login/logout)
-   */
-  useEffect(() => {
-    // Fetch logged-in user (if any)
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
-
-    // Subscribe to login/logout changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => setUser(session?.user ?? null)
-    );
-
-    // Cleanup subscription when component unmounts
-    return () => subscription.unsubscribe();
-  }, []);
+  const supabase = useSupabaseClient()
+  const session = useSession()
+  const router = useRouter()
 
   /**
    * Handle Logout:
    * - Signs user out via Supabase
-   * - Clears local state
    * - Redirects back to landing page (/)
    */
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    window.location.href = '/';
-  };
+    await supabase.auth.signOut()
+    router.push('/')
+  }
 
   return (
     <nav className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur border-b border-slate-800 text-slate-100 shadow">
@@ -63,7 +43,7 @@ export default function Navbar() {
 
         {/* Right: Navigation links (dynamic based on auth state) */}
         <div className="flex items-center gap-4">
-          {user ? (
+          {session ? (
             // Logged IN state → show Dashboard + Logout
             <>
               <Link
@@ -102,5 +82,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  );
+  )
 }

@@ -1,16 +1,31 @@
-/** Lab detail - lists modules in the lab */
-import { supabase } from '@/lib/supabaseClient';
+/**
+ * LabPage (Server Component)
+ * ---------------------------
+ * - Shows details of a single lab by slug.
+ * - Lists all modules under that lab.
+ */
+
+import { createServerComponentClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-export default async function LabPage({ params }: { params: { slug: string } }) {
+export default async function LabPage({ params }: { params: Promise<{ slug: string }> }) {
+  // ✅ Await params for Next.js 15
+  const { slug } = await params;
+
+  // ✅ Create server-side client
+  const supabase = createServerComponentClient({ cookies });
+
+  // Fetch lab by slug
   const { data: lab } = await supabase
     .from('labs')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .single();
 
   if (!lab) return <div className="p-6">Lab not found</div>;
 
+  // Fetch modules under this lab
   const { data: modules } = await supabase
     .from('modules')
     .select('*')
@@ -30,7 +45,6 @@ export default async function LabPage({ params }: { params: { slug: string } }) 
             <div key={m.id} className="p-4 border rounded bg-slate-800">
               <h3 className="font-semibold">{m.title}</h3>
               <p className="text-slate-400 text-sm mt-1">{m.summary}</p>
-              {/* ✅ FIXED LINK */}
               <Link
                 href={`/dashboard/modules/${m.id}`}
                 className="mt-3 inline-block px-3 py-2 bg-amber-500 rounded"

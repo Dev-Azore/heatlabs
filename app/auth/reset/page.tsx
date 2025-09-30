@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClientComponentClient } from '@supabase/ssr';
 import Link from 'next/link';
 
 export default function ResetPage() {
