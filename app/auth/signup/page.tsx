@@ -3,9 +3,9 @@
 /**
  * Signup Page
  * ------------------------
- * - Registers a new user with email + password.
- * - Redirects to /dashboard on success.
- * - Uses Supabase context (useSupabaseClient).
+ * - Creates a new user with email + password.
+ * - On success → does NOT auto-login (security).
+ * - Instead → redirects to /auth/login so user must log in.
  */
 
 import { useState } from 'react'
@@ -27,25 +27,22 @@ export default function SignupPage() {
     setError(null)
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-
+    const { error } = await supabase.auth.signUp({ email, password })
     setLoading(false)
 
     if (error) {
       setError(error.message)
     } else {
-      router.push('/dashboard')
-      router.refresh()
+      // ✅ force user to log in after signup
+      router.push('/auth/login')
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100 px-6">
       <div className="w-full max-w-md bg-slate-800 p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">Create account</h1>
+        <h1 className="text-2xl font-bold mb-4">Create Account</h1>
+
         <form onSubmit={handleSignup} className="space-y-4">
           <input
             type="email"
@@ -64,6 +61,7 @@ export default function SignupPage() {
             className="w-full p-2 rounded bg-slate-700 text-white"
           />
           {error && <p className="text-red-400 text-sm">{error}</p>}
+
           <button
             type="submit"
             disabled={loading}
@@ -73,7 +71,7 @@ export default function SignupPage() {
           </button>
         </form>
 
-        {/* Links below form */}
+        {/* Links */}
         <div className="mt-4 text-sm text-slate-400 space-y-1">
           <p>
             Already have an account?{' '}

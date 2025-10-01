@@ -5,9 +5,9 @@
  * =================
  * - Displays a sticky top navigation bar across the site.
  * - Auth-aware via Supabase context (useSession).
- *   - Logged OUT → shows Login + Signup.
- *   - Logged IN  → shows Dashboard + Logout.
- * - Always shows the ThemeToggle component.
+ *   - Guest (no session) → shows Login + Signup.
+ *   - Logged in → shows Dashboard + Logout.
+ * - ThemeToggle always visible.
  */
 
 import Link from 'next/link'
@@ -22,18 +22,19 @@ export default function Navbar() {
 
   /**
    * Handle Logout:
-   * - Signs user out via Supabase
-   * - Redirects back to landing page (/)
+   * - Ends session via Supabase.
+   * - Redirects to landing page (/).
    */
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
+    router.refresh()
   }
 
   return (
     <nav className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur border-b border-slate-800 text-slate-100 shadow">
       <div className="container mx-auto px-6 py-3 flex items-center justify-between">
-        {/* Left: Site Branding (always visible) */}
+        {/* Left: Site Branding */}
         <Link
           href="/"
           className="font-extrabold text-xl tracking-tight text-amber-400 hover:text-amber-300 transition"
@@ -41,10 +42,10 @@ export default function Navbar() {
           HEAT Labs
         </Link>
 
-        {/* Right: Navigation links (dynamic based on auth state) */}
+        {/* Right: Navigation links (dynamic) */}
         <div className="flex items-center gap-4">
           {session ? (
-            // Logged IN state → show Dashboard + Logout
+            // ✅ Logged-in state → Dashboard + Logout
             <>
               <Link
                 href="/dashboard"
@@ -60,7 +61,7 @@ export default function Navbar() {
               </button>
             </>
           ) : (
-            // Logged OUT state → show Login + Signup
+            // ✅ Guest state → Login + Signup
             <>
               <Link
                 href="/auth/login"

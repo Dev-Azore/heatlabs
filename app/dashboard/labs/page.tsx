@@ -2,34 +2,40 @@
  * LabsPage (Server Component)
  * ----------------------------
  * - Lists all labs for authenticated users.
- * - Uses server-side Supabase client (with session from cookies).
- * - Redirects to /auth/login if no session exists.
- * - Passes labs to AnimatedLabs client component for animations.
+ * - Protected by middleware, so guests are redirected before here.
  */
 
-import { createServerComponentClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import AnimatedLabs from '../AnimatedLabs';
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+import AnimatedLabs from '../AnimatedLabs'
 
 export default async function LabsPage() {
-  // ✅ Create server-side Supabase client
-  const supabase = createServerComponentClient({ cookies });
+  // ✅ Get cookie store (must be awaited in Next.js 15+)
+  const cookieStore = await cookies()
 
-  // ✅ Verify active session
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // ✅ Supabase client with proper cookie adapter
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get: (name: string) => cookieStore.get(name)?.value,
+        set: (name: string, value: string, options: any) => {
+          cookieStore.set({ name, value, ...options })
+        },
+        remove: (name: string, options: any) => {
+          cookieStore.set({ name, value: '', ...options })
+        },
+      },
+    }
+  )
 
-  if (!session) {
-    redirect('/auth/login');
-  }
-
-  // ✅ Fetch all labs (most recent first)
+  // ✅ Fetch labs
   const { data: labs = [], error } = await supabase
     .from('labs')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
 
   if (error) {
     return (
@@ -39,7 +45,7 @@ export default async function LabsPage() {
           <p className="text-red-400 mt-4">Failed to load labs: {error.message}</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -54,5 +60,5 @@ export default async function LabsPage() {
         </section>
       </div>
     </div>
-  );
+  )
 }
