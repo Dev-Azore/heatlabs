@@ -1,48 +1,45 @@
-'use client';
-
+// components/Footer.tsx
 /**
- * Footer Component
- * =================
- * - Displays branding, contact info, and quick navigation links.
- * - Auth-aware: quick links differ depending on login state.
- *   - Logged OUT → Home, Login, Signup.
- *   - Logged IN  → Dashboard, Logout.
- * - Uses a 3-column grid (branding, contact info, quick links).
+ * Site footer with contact information and dynamic links
+ * Shows different navigation based on authentication state
  */
+'use client'
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import Link from 'next/link';
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase/browser-client'
 
 export default function Footer() {
-  // State: track logged-in user
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(null)
 
+  // Get current user on component mount
   useEffect(() => {
-    // Fetch logged-in user on mount
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
 
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => setUser(session?.user ?? null)
-    );
+    getUser()
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
 
-  /**
-   * Handle logout → sign user out and redirect home
-   */
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Handle user logout
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    window.location.href = '/';
-  };
+    await supabase.auth.signOut()
+    window.location.href = '/'
+  }
 
   return (
     <footer className="bg-slate-900 border-t border-slate-800 text-slate-300 py-10">
       <div className="container mx-auto px-6 grid md:grid-cols-3 gap-8">
-        {/* Column 1: Branding */}
+        
+        {/* Brand Section */}
         <div>
           <h3 className="font-bold text-xl text-amber-400">HEAT Labs</h3>
           <p className="text-sm mt-2 text-slate-400">
@@ -50,7 +47,7 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Column 2: Contact Info */}
+        {/* Contact Information */}
         <div>
           <h4 className="font-semibold text-white">Contact</h4>
           <ul className="text-sm mt-3 space-y-1 text-slate-400">
@@ -60,12 +57,12 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Column 3: Quick Links (dynamic) */}
+        {/* Quick Links */}
         <div>
           <h4 className="font-semibold text-white">Quick Links</h4>
           <ul className="text-sm mt-3 space-y-1">
             {user ? (
-              // Logged IN quick links
+              // Authenticated user links
               <>
                 <li>
                   <Link href="/dashboard" className="hover:text-amber-400 transition">
@@ -82,7 +79,7 @@ export default function Footer() {
                 </li>
               </>
             ) : (
-              // Logged OUT quick links
+              // Guest user links
               <>
                 <li>
                   <Link href="/" className="hover:text-amber-400 transition">
@@ -105,10 +102,10 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Footer bottom note */}
+      {/* Copyright Notice */}
       <div className="text-center text-sm text-slate-600 mt-8">
         © {new Date().getFullYear()} HEAT Labs • The Tech Tribe
       </div>
     </footer>
-  );
+  )
 }

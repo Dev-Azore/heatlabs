@@ -1,20 +1,17 @@
-'use client';
-
+// app/auth/update-password/page.tsx
 /**
  * Update Password Page
- * --------------------
- * - This page is opened when user clicks the reset link in their email
- * - User can set a new password here
- * - After success → redirect to /dashboard
+ * 
+ * Fixed: Use correct Supabase client import
  */
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabase/browser-client';
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -37,7 +34,6 @@ export default function UpdatePasswordPage() {
     if (error) {
       setError(error.message);
     } else {
-      // ✅ Redirect to dashboard after password reset
       router.push('/dashboard');
       router.refresh();
     }

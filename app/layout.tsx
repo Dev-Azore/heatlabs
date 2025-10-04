@@ -1,14 +1,8 @@
+// app/layout.tsx
 /**
- * Root Layout
- * =============
- * - Wraps all pages with global UI elements:
- *   - SupabaseProvider → provides auth + session context across the app.
- *   - ThemeProvider → enables light/dark mode.
- *   - Navbar → top navigation (auth-aware).
- *   - Footer → bottom site info.
- * - Applies global Tailwind styles (globals.css).
+ * Root application layout
+ * Wraps all pages with necessary providers and global components
  */
-
 import './globals.css'
 import SupabaseProvider from '@/providers/SupabaseProvider'
 import ThemeProvider from '@/components/ThemeProvider'
@@ -24,17 +18,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="scroll-smooth">
       <body className="bg-slate-950 text-slate-100 font-sans antialiased">
-        {/* ✅ SupabaseProvider must wrap everything so useSession/useSupabaseClient work */}
+        {/* Supabase authentication provider */}
         <SupabaseProvider>
-          {/* ✅ ThemeProvider enables dark/light mode toggle */}
+          {/* Theme management provider */}
           <ThemeProvider>
-            {/* Global Navbar (always visible, auth-aware) */}
+            {/* Global navigation */}
             <Navbar />
 
-            {/* Dynamic page content */}
+            {/* Main page content */}
             <main className="min-h-screen">{children}</main>
 
-            {/* Global Footer */}
+            {/* Global footer */}
             <Footer />
           </ThemeProvider>
         </SupabaseProvider>

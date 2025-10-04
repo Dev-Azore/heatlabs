@@ -1,19 +1,16 @@
-'use client';
-
+// app/auth/reset/page.tsx
 /**
  * Reset Password Page
- * -------------------
- * - Sends reset password link to user's email
- * - Redirect not needed; Supabase email link handles reset
+ * 
+ * Fixed: Use correct Supabase client import
  */
+'use client';
 
 import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabase/browser-client';
 import Link from 'next/link';
 
 export default function ResetPage() {
-  const supabase = createClientComponentClient();
-
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

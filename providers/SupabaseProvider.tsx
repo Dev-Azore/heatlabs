@@ -1,30 +1,70 @@
+// providers/SupabaseProvider.tsx
+/**
+ * Supabase Session Context Provider
+ * 
+ * Purpose:
+ * - Provides auth state to client components
+ * - Handles auth state changes and automatic redirects
+ * - Manages session synchronization between client and server
+ * 
+ * Updated: Improved session handling and redirect logic
+ */
 'use client'
 
-/**
- * SupabaseProvider
- * ----------------
- * Wraps the app with Supabase's SessionContextProvider so that:
- * - Auth state is preserved across client pages.
- * - Supabase client is available via React hooks (useSupabaseClient, useSession).
- */
+import { createBrowserSupabaseClient } from '@/lib/supabase/browser-client'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
-import { createBrowserClient } from '@supabase/ssr'
-import { SessionContextProvider } from '@supabase/auth-helpers-react'
-import { useState } from 'react'
+export default function SupabaseProvider({ 
+  children 
+}: { 
+  children: React.ReactNode 
+}) {
+  const router = useRouter()
+  const [supabase] = useState(() => createBrowserSupabaseClient())
 
-export default function SupabaseProvider({ children }: { children: React.ReactNode }) {
-  // ✅ Initialize Supabase client only once in the browser
-  const [supabaseClient] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-  )
+  useEffect(() => {
+    // Get initial session on mount
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('Initial session:', session ? 'Found' : 'None')
+    }
 
-  return (
-    // ✅ Provide Supabase client + session context to entire React tree
-    <SessionContextProvider supabaseClient={supabaseClient}>
-      {children}
-    </SessionContextProvider>
-  )
+    initializeAuth()
+
+    // Listen for auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email)
+
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in, refreshing router...')
+        // Force refresh to update middleware
+        router.refresh()
+        
+        // Wait a bit for middleware to detect the new session
+        setTimeout(() => {
+          console.log('Redirecting to dashboard...')
+          router.push('/dashboard')
+        }, 500)
+      } 
+      else if (event === 'SIGNED_OUT') {
+        console.log('User signed out, redirecting to home...')
+        router.refresh()
+        router.push('/')
+      }
+      else if (event === 'TOKEN_REFRESHED') {
+        // Refresh UI when token is updated
+        router.refresh()
+      }
+    })
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabase, router])
+
+  return children
 }

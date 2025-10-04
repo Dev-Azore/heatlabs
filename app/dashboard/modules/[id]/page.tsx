@@ -1,21 +1,26 @@
+// app/dashboard/modules/[id]/page.tsx
 /**
- * Module Loader
- * --------------
- * - Loads one module by ID.
- * - Protected: requires login (middleware + server check).
+ * Module Loader Page
+ * 
+ * Fixed: TypeScript params type for Next.js 15
  */
-
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import ChallengeRoom from '@/components/ChallengeRoom'
 import DynamicModuleRenderer from '@/components/DynamicModuleRenderer'
 
-export default async function ModuleLoader({ params }: { params: { id: string } }) {
-  // ✅ Get cookie store
-  const cookieStore = await cookies()
+// Next.js 15: params is now a Promise
+interface PageProps {
+  params: Promise<{ id: string }>
+}
 
-  // ✅ Supabase client with correct cookie adapter
+export default async function ModuleLoader({ params }: PageProps) {
+  // Await the params promise in Next.js 15
+  const { id } = await params
+
+  const cookieStore = await cookies()
+  
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -32,18 +37,13 @@ export default async function ModuleLoader({ params }: { params: { id: string } 
     }
   )
 
-  // ✅ Enforce login
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  // ✅ Fetch module
   const { data: module } = await supabase
     .from('modules')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!module) return <div className="p-6">Module not found</div>
