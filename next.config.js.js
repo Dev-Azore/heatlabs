@@ -13,14 +13,14 @@ const nextConfig = {
     }
     return config;
   },
-  // Optional: Disable TypeScript errors during build if you want to deploy while fixing
-  // typescript: {
-  //   ignoreBuildErrors: false, // Set to true temporarily if needed, but fix properly
-  // },
-  // Optional: Disable ESLint during build
-  // eslint: {
-  //   ignoreDuringBuilds: true,
-  // },
+  // Increase timeout for API calls in development
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/supabase-js'],
+  },
+  // Configure allowed development origins for Next.js 15
+  allowedDevOrigins: ['localhost', '127.0.0.1', '10.80.162.246'],
+  // Enable React strict mode for better development experience
+  reactStrictMode: true,
 }
 
 module.exports = nextConfig

@@ -5,53 +5,57 @@
  * Purpose:
  * - Protects routes based on authentication state
  * - Handles redirects for auth and admin routes
- * - Uses getSession() with proper error handling to avoid AuthSessionMissingError
+ * - Uses getUser() for secure authentication
+ * - Protects all authenticated routes including labs and profile
  * 
- * Updated: Uses getSession() instead of getUser() to avoid missing session errors
+ * Updated: Fixed user role checking and added comprehensive route protection
  */
+
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Create response object
-  let response = NextResponse.next()
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
+
+  // Create Supabase client with proper cookie handling
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+        },
+      },
+    }
+  )
 
   try {
-    // Create Supabase client with proper cookie handling
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options)
-            })
-          },
-        },
-      }
-    )
-
-    // ✅ FIX: Use getSession() instead of getUser() to avoid AuthSessionMissingError
-    // getSession() reads from cookies without server validation, which is fine for middleware
-    const { data: { session } } = await supabase.auth.getSession()
-    const user = session?.user || null
-
+    // ✅ Use getUser() for secure authentication (validates with Supabase Auth server)
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    
     const path = request.nextUrl.pathname
 
     console.log(`Middleware: Path=${path}, User=${user ? user.id : 'none'}`)
 
-    // 🔐 Rule 1: Protect Dashboard Routes
-    if (path.startsWith('/dashboard')) {
-      if (!user) {
-        console.log('Redirecting to login from dashboard')
-        const redirectUrl = new URL('/auth/login', request.url)
-        redirectUrl.searchParams.set('returnUrl', path)
-        return NextResponse.redirect(redirectUrl)
-      }
+    // 🔐 Rule 1: Protect All Authenticated Routes
+    const protectedRoutes = ['/dashboard', '/labs', '/profile']
+    const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
+
+    if (isProtectedRoute && !user) {
+      console.log(`Redirecting to login from ${path}`)
+      const redirectUrl = new URL('/auth/login', request.url)
+      redirectUrl.searchParams.set('returnUrl', path)
+      return NextResponse.redirect(redirectUrl)
     }
 
     // 🔐 Rule 2: Protect Admin Routes
@@ -63,13 +67,20 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(redirectUrl)
       }
 
-      // Check admin role
-      const { data: role, error: roleError } = await supabase.rpc('get_my_role')
-      
-      if (roleError || !role || (role !== 'admin' && role !== 'moderator')) {
-        console.log('User not admin, redirecting to dashboard')
+      // ✅ FIXED: Check admin role by querying the profiles table directly
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      // Allow access only for users with 'admin' role
+      if (profileError || !profile || profile.role !== 'admin') {
+        console.log(`User ${user.email} not admin, redirecting to dashboard`)
         return NextResponse.redirect(new URL('/dashboard', request.url))
       }
+
+      console.log(`Admin access granted for: ${user.email}`)
     }
 
     // 🔐 Rule 3: Redirect Authenticated Users Away from Auth Pages
@@ -79,11 +90,11 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(returnUrl, request.url))
     }
 
-    return response
+    return supabaseResponse
   } catch (error) {
     console.error('Middleware error:', error)
     // In case of error, allow the request to proceed
-    return response
+    return supabaseResponse
   }
 }
 
@@ -92,5 +103,7 @@ export const config = {
     '/dashboard/:path*',
     '/admin/:path*',
     '/auth/:path*',
+    '/labs/:path*',
+    '/profile/:path*',
   ],
 }
