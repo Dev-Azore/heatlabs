@@ -10,10 +10,12 @@ export default function AnimatedParagraph({
   children,
   delay = 0,
   small = false,
+  className = "",
 }: {
   children: React.ReactNode;
   delay?: number;
   small?: boolean;
+  className?: string;
 }) {
   return (
     <motion.p
@@ -21,7 +23,7 @@ export default function AnimatedParagraph({
         small
           ? "mt-4 text-slate-400 text-sm"
           : "text-slate-400 mb-6 max-w-2xl mx-auto"
-      }`}
+      } ${className}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay }}

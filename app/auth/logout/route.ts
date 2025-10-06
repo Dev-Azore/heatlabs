@@ -9,14 +9,14 @@
  * 
  * Updated: Ensures complete session termination
  */
-import { createClient } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr' // Fixed: changed from createClient to createServerClient
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   const cookieStore = await cookies()
   
-  const supabase = createClient(
+  const supabase = createServerClient( // Fixed: changed from createClient to createServerClient
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {

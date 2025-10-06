@@ -1,0 +1,21 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/modules/complete/route": "/api/modules/complete",
+  "/auth/callback/route": "/auth/callback",
+  "/auth/logout/route": "/auth/logout",
+  "/admin/labs/page": "/admin/labs",
+  "/admin/modules/page": "/admin/modules",
+  "/admin/page": "/admin",
+  "/admin/posts/page": "/admin/posts",
+  "/auth/login/page": "/auth/login",
+  "/auth/reset/page": "/auth/reset",
+  "/auth/signup/page": "/auth/signup",
+  "/auth/update-password/page": "/auth/update-password",
+  "/dashboard/labs/[id]/page": "/dashboard/labs/[id]",
+  "/dashboard/labs/page": "/dashboard/labs",
+  "/dashboard/modules/[id]/page": "/dashboard/modules/[id]",
+  "/page": "/",
+  "/dashboard/modules/digital-circuit/page": "/dashboard/modules/digital-circuit",
+  "/dashboard/page": "/dashboard",
+  "/profile/page": "/profile"
+}

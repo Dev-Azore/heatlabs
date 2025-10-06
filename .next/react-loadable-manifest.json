@@ -1,54 +1,61 @@
 {
   "app\\dashboard\\modules\\coded\\registry.ts -> ./anatomy-quiz": {
-    "id": "app\\dashboard\\modules\\coded\\registry.ts -> ./anatomy-quiz",
+    "id": 4913,
     "files": [
-      "static/chunks/_app-pages-browser_app_dashboard_modules_coded_anatomy-quiz_tsx.js"
+      "static/chunks/913.fcc6fa0534aed810.js"
     ]
   },
   "app\\dashboard\\modules\\coded\\registry.ts -> ./crop-simulator": {
-    "id": "app\\dashboard\\modules\\coded\\registry.ts -> ./crop-simulator",
+    "id": 7057,
     "files": [
-      "static/chunks/_app-pages-browser_app_dashboard_modules_coded_crop-simulator_tsx.js"
+      "static/chunks/57.7a2c72d0b9fe242d.js"
     ]
   },
   "app\\dashboard\\modules\\coded\\registry.ts -> ./math-puzzle": {
-    "id": "app\\dashboard\\modules\\coded\\registry.ts -> ./math-puzzle",
+    "id": 6153,
     "files": [
-      "static/chunks/_app-pages-browser_app_dashboard_modules_coded_math-puzzle_tsx.js"
+      "static/chunks/153.42ddb800373781b2.js"
     ]
   },
   "app\\dashboard\\modules\\coded\\registry.ts -> ./traffic-light": {
-    "id": "app\\dashboard\\modules\\coded\\registry.ts -> ./traffic-light",
+    "id": 6866,
     "files": [
-      "static/chunks/_app-pages-browser_app_dashboard_modules_coded_traffic-light_tsx.js"
+      "static/chunks/866.f8793473fb039fe7.js"
     ]
   },
   "components\\DynamicModuleRenderer.tsx -> @/lib/supabaseClient": {
-    "id": "components\\DynamicModuleRenderer.tsx -> @/lib/supabaseClient",
+    "id": 6910,
     "files": [
-      "static/chunks/_app-pages-browser_lib_supabaseClient_ts.js"
+      "static/chunks/945-e74d80bde418e878.js",
+      "static/chunks/910.0297d3c7d7c7ae34.js"
     ]
   },
   "node_modules\\@supabase\\auth-js\\dist\\module\\lib\\helpers.js -> @supabase/node-fetch": {
-    "id": "node_modules\\@supabase\\auth-js\\dist\\module\\lib\\helpers.js -> @supabase/node-fetch",
+    "id": 3537,
     "files": []
   },
   "node_modules\\@supabase\\functions-js\\dist\\module\\helper.js -> @supabase/node-fetch": {
-    "id": "node_modules\\@supabase\\functions-js\\dist\\module\\helper.js -> @supabase/node-fetch",
+    "id": 3537,
     "files": []
   },
   "node_modules\\@supabase\\realtime-js\\dist\\module\\RealtimeClient.js -> @supabase/node-fetch": {
-    "id": "node_modules\\@supabase\\realtime-js\\dist\\module\\RealtimeClient.js -> @supabase/node-fetch",
+    "id": 3537,
     "files": []
   },
   "node_modules\\@supabase\\storage-js\\dist\\module\\lib\\helpers.js -> @supabase/node-fetch": {
-    "id": "node_modules\\@supabase\\storage-js\\dist\\module\\lib\\helpers.js -> @supabase/node-fetch",
+    "id": 3537,
     "files": []
   },
-  "node_modules\\next\\dist\\client\\dev\\hot-reloader\\app\\use-websocket.js -> @vercel/turbopack-ecmascript-runtime/browser/dev/hmr-client/hmr-client.ts": {
-    "id": "node_modules\\next\\dist\\client\\dev\\hot-reloader\\app\\use-websocket.js -> @vercel/turbopack-ecmascript-runtime/browser/dev/hmr-client/hmr-client.ts",
+  "node_modules\\next\\dist\\client\\index.js -> ../pages/_app": {
+    "id": 5139,
     "files": [
-      "static/chunks/_app-pages-browser_node_modules_next_dist_client_dev_noop-turbopack-hmr_js.js"
+      "static/chunks/139.7a5a8e93a21948c1.js"
+    ]
+  },
+  "node_modules\\next\\dist\\client\\index.js -> ../pages/_error": {
+    "id": 1646,
+    "files": [
+      "static/chunks/646.f342b7cffc01feb0.js"
     ]
   }
 }

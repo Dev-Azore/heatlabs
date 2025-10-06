@@ -1,7 +1,21 @@
 {
-  "/page": "app/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/modules/complete/route": "app/api/modules/complete/route.js",
+  "/auth/callback/route": "app/auth/callback/route.js",
+  "/auth/logout/route": "app/auth/logout/route.js",
+  "/admin/labs/page": "app/admin/labs/page.js",
+  "/admin/modules/page": "app/admin/modules/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/posts/page": "app/admin/posts/page.js",
   "/auth/login/page": "app/auth/login/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
+  "/auth/reset/page": "app/auth/reset/page.js",
+  "/auth/signup/page": "app/auth/signup/page.js",
+  "/auth/update-password/page": "app/auth/update-password/page.js",
   "/dashboard/labs/[id]/page": "app/dashboard/labs/[id]/page.js",
-  "/dashboard/modules/[id]/page": "app/dashboard/modules/[id]/page.js"
+  "/dashboard/labs/page": "app/dashboard/labs/page.js",
+  "/dashboard/modules/[id]/page": "app/dashboard/modules/[id]/page.js",
+  "/page": "app/page.js",
+  "/dashboard/modules/digital-circuit/page": "app/dashboard/modules/digital-circuit/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/profile/page": "app/profile/page.js"
 }

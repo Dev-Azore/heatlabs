@@ -57,7 +57,7 @@ export default async function Home() {
           </AnimatedHeading>
 
           {/* Animated tagline */}
-          <AnimatedParagraph delay={0.2} className="text-xl md:text-2xl text-slate-300 mb-12 max-w-4xl mx-auto leading-relaxed">
+          <AnimatedParagraph delay={0.2}>
             Advanced hands-on training through real-world simulations in <span className="text-blue-400">Health</span>,{" "}
             <span className="text-green-400">Education</span>, <span className="text-amber-400">Agriculture</span>, and{" "}
             <span className="text-purple-400">Technology</span>.

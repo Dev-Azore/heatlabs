@@ -12,7 +12,17 @@ export const createMiddlewareClient = (request: Request, response: Response) => 
     {
       cookies: {
         getAll() {
-          return request.headers.get('cookie')?.split(';') || []
+          // FIXED: Return proper cookie structure with name and value
+          const cookieHeader = request.headers.get('cookie')
+          if (!cookieHeader) return []
+          
+          return cookieHeader.split(';').map(cookie => {
+            const [name, ...valueParts] = cookie.trim().split('=')
+            return {
+              name: name.trim(),
+              value: valueParts.join('=').trim()
+            }
+          })
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {

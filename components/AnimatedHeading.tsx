@@ -12,10 +12,12 @@ export default function AnimatedHeading({
   children,
   delay = 0,
   as = "h1",
+  className = "",
 }: {
   children: React.ReactNode;
   delay?: number;
   as?: "h1" | "h2" | "h3" | "h4";
+  className?: string;
 }) {
   // Map of allowed tags → motion components
   const MotionTag = {
@@ -31,7 +33,7 @@ export default function AnimatedHeading({
         as === "h1"
           ? "text-4xl md:text-5xl font-extrabold mb-4 text-white"
           : "text-3xl font-semibold mb-6 text-white"
-      }`}
+      } ${className}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay }}

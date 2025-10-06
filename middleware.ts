@@ -26,7 +26,12 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         getAll() {
-          return request.cookies.getAll()
+          // FIXED: Return array of objects with name and value properties
+          const cookies = request.cookies.getAll()
+          return cookies.map(cookie => ({
+            name: cookie.name,
+            value: cookie.value
+          }))
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
@@ -39,6 +44,7 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // ... rest of your middleware code remains exactly the same ...
   try {
     // ✅ Use getUser() for secure authentication (validates with Supabase Auth server)
     const { data: { user }, error: userError } = await supabase.auth.getUser()
